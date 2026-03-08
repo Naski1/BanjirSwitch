@@ -42,7 +42,11 @@ async function fetchAPI(endpoint, params = {}) {
         .join('&');
     if (query) url += `?${query}`;
 
-    const response = await fetch(url);
+    const response = await fetch(url, {
+        headers: {
+            'ngrok-skip-browser-warning': '69420'
+        }
+    });
     if (!response.ok) {
         throw new Error(`API Error: ${response.status} ${response.statusText}`);
     }
@@ -54,6 +58,7 @@ async function fetchAuthAPI(endpoint, options = {}) {
     const config = {
         headers: {
             'Content-Type': 'application/json',
+            'ngrok-skip-browser-warning': '69420',
             ...authHeaders(),
             ...options.headers,
         },
@@ -83,7 +88,10 @@ export async function login(phone, password) {
 
     const response = await fetch(`${API_BASE}/auth/login`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'ngrok-skip-browser-warning': '69420'
+        },
         body: formData,
     });
 
@@ -257,6 +265,8 @@ export async function getPetugasCoverage() {
 
 // ============ HEALTH CHECK ============
 export async function checkHealth() {
-    const response = await fetch(HEALTH_URL);
+    const response = await fetch(HEALTH_URL, {
+        headers: { 'ngrok-skip-browser-warning': '69420' }
+    });
     return response.json();
 }
