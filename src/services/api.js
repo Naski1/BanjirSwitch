@@ -5,7 +5,7 @@
 
 // Gunakan environment variable VITE_API_URL jika ada (untuk hosting seperti Vercel), 
 // jika tidak ada akan fallback ke '/api' (untuk development dengan proxy).
-const API_URL = import.meta.env.VITE_API_URL || '';
+const API_URL = 'https://pathwayed-georgine-questioningly.ngrok-free.dev';
 const API_BASE = `${API_URL}/api/v1`;
 const HEALTH_URL = `${API_URL}/health`;
 
