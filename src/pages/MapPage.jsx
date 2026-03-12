@@ -1,5 +1,7 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Circle, useMap } from 'react-leaflet';
+import { useState, useEffect, useCallback } from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
+import { MapContainer, TileLayer, Marker, Popup, Circle, useMap, ZoomControl } from 'react-leaflet';
+import { Compass, MapPin, Search, Home, BarChart2, Ruler, Tag, Megaphone, HardHat, Droplet, Activity, Map as MapIcon, X } from 'lucide-react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -18,15 +20,17 @@ L.Icon.Default.mergeOptions({
     shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
 
-function createDivIcon(emoji, bgColor) {
+function createDivIcon(iconNode, bgColor) {
+    const iconHtml = typeof iconNode === 'string' ? iconNode : renderToStaticMarkup(iconNode);
     return L.divIcon({
         html: `<div style="
       background:${bgColor};
       width:32px;height:32px;border-radius:50%;
       display:flex;align-items:center;justify-content:center;
+      color: white;
       font-size:16px;border:2px solid rgba(255,255,255,0.3);
       box-shadow:0 2px 8px rgba(0,0,0,0.4);
-    ">${emoji}</div>`,
+    ">${iconHtml}</div>`,
         className: '',
         iconSize: [32, 32],
         iconAnchor: [16, 16],
@@ -155,11 +159,12 @@ export default function MapPage() {
                     center={[center.lat, center.lng]}
                     zoom={13}
                     style={{ height: '100%', width: '100%' }}
-                    zoomControl={true}
+                    zoomControl={false}
                 >
+                    <ZoomControl position="bottomright" />
                     <TileLayer
                         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                        url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+                        url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
                     />
                     <MapCenter center={mapCenter || location} />
 
@@ -167,7 +172,7 @@ export default function MapPage() {
                     {location && (
                         <Marker position={[location.lat, location.lng]} icon={userIcon}>
                             <Popup>
-                                <div className="popup-title">📍 Lokasi Anda</div>
+                                <div className="popup-title"><MapPin size={16} style={{ display: 'inline', verticalAlign: 'text-bottom', marginRight: '4px' }} /> Lokasi Anda</div>
                                 <div className="popup-info">
                                     <span>{location.lat.toFixed(5)}, {location.lng.toFixed(5)}</span>
                                 </div>
@@ -191,9 +196,9 @@ export default function MapPage() {
                             <Popup>
                                 <div className="popup-title">{zone.name}</div>
                                 <div className="popup-info">
-                                    <span>📊 Risiko: {getRiskLabel(zone.risk_level)}</span>
-                                    <span>📏 Jarak: {zone.distance_km} km</span>
-                                    <span>🏷️ Tipe: {getDisasterLabel(zone.disaster_type)}</span>
+                                    <span><BarChart2 size={14} style={{ display: 'inline', verticalAlign: 'text-bottom', marginRight: '4px' }} /> Risiko: {getRiskLabel(zone.risk_level)}</span>
+                                    <span><Ruler size={14} style={{ display: 'inline', verticalAlign: 'text-bottom', marginRight: '4px' }} /> Jarak: {zone.distance_km} km</span>
+                                    <span><Tag size={14} style={{ display: 'inline', verticalAlign: 'text-bottom', marginRight: '4px' }} /> Tipe: {getDisasterLabel(zone.disaster_type)}</span>
                                     {zone.description && (
                                         <span style={{ marginTop: 4, fontSize: '0.78rem', opacity: 0.8 }}>
                                             {zone.description}
@@ -224,15 +229,15 @@ export default function MapPage() {
                         <Marker
                             key={`shelter-${shelter.id}`}
                             position={[shelter.lat, shelter.lng]}
-                            icon={createDivIcon('🏠', '#10b981')}
+                            icon={createDivIcon(<Home size={18} color="#ffffff" />, '#10b981')}
                         >
                             <Popup>
-                                <div className="popup-title">🏠 {shelter.name}</div>
+                                <div className="popup-title"><Home size={16} style={{ display: 'inline', verticalAlign: 'text-bottom', marginRight: '4px' }} /> {shelter.name}</div>
                                 <div className="popup-info">
-                                    <span>📍 {shelter.address || '-'}</span>
+                                    <span><MapPin size={14} style={{ display: 'inline', verticalAlign: 'text-bottom', marginRight: '4px' }} /> {shelter.address || '-'}</span>
                                     <span>👥 Kapasitas: {shelter.current_occupancy}/{shelter.capacity}</span>
-                                    <span>📏 Jarak: {shelter.distance_km} km</span>
-                                    <span>📋 Tipe: {getShelterTypeLabel(shelter.type)}</span>
+                                    <span><Ruler size={14} style={{ display: 'inline', verticalAlign: 'text-bottom', marginRight: '4px' }} /> Jarak: {shelter.distance_km} km</span>
+                                    <span><Tag size={14} style={{ display: 'inline', verticalAlign: 'text-bottom', marginRight: '4px' }} /> Tipe: {getShelterTypeLabel(shelter.type)}</span>
                                 </div>
                             </Popup>
                         </Marker>
@@ -247,9 +252,9 @@ export default function MapPage() {
                                 icon={createDivIcon(getDisasterIcon(report.type), '#f59e0b')}
                             >
                                 <Popup>
-                                    <div className="popup-title">📢 {report.title}</div>
+                                    <div className="popup-title"><Megaphone size={16} style={{ display: 'inline', verticalAlign: 'text-bottom', marginRight: '4px' }} /> {report.title}</div>
                                     <div className="popup-info">
-                                        <span>🏷️ {getDisasterLabel(report.type)}</span>
+                                        <span><Tag size={14} style={{ display: 'inline', verticalAlign: 'text-bottom', marginRight: '4px' }} /> {getDisasterLabel(report.type)}</span>
                                         <span>Status: {report.status}</span>
                                         {report.distance_km && <span>Jarak: {report.distance_km?.toFixed(2)} km</span>}
                                     </div>
@@ -267,12 +272,12 @@ export default function MapPage() {
                                 icon={createDivIcon(getDisasterIcon(report.disaster_type), getRiskColor(report.severity === 'extreme' ? 4 : report.severity === 'severe' ? 3 : report.severity === 'moderate' ? 2 : 1))}
                             >
                                 <Popup>
-                                    <div className="popup-title">👷 Laporan Petugas</div>
+                                    <div className="popup-title"><HardHat size={16} style={{ display: 'inline', verticalAlign: 'text-bottom', marginRight: '4px' }} /> Laporan Petugas</div>
                                     <div className="popup-info">
-                                        <span>📍 {report.location_name}</span>
-                                        <span>🏷️ {getDisasterLabel(report.disaster_type)}</span>
-                                        <span>Status: {report.status} (Keparahan: {report.severity})</span>
-                                        {report.water_level_cm != null && <span>💧 Air: {report.water_level_cm} cm</span>}
+                                        <span><MapPin size={14} style={{ display: 'inline', verticalAlign: 'text-bottom', marginRight: '4px' }} /> {report.location_name}</span>
+                                        <span><Tag size={14} style={{ display: 'inline', verticalAlign: 'text-bottom', marginRight: '4px' }} /> {getDisasterLabel(report.disaster_type)}</span>
+                                        <span>Status: {report.status} (<Activity size={14} style={{ display: 'inline', verticalAlign: 'text-bottom' }} /> {report.severity})</span>
+                                        {report.water_level_cm != null && <span><Droplet size={14} style={{ display: 'inline', verticalAlign: 'text-bottom', marginRight: '4px' }} /> Air: {report.water_level_cm} cm</span>}
                                     </div>
                                 </Popup>
                             </Marker>
@@ -281,85 +286,94 @@ export default function MapPage() {
                 </MapContainer>
             </div>
 
-            {/* Search bar */}
-            <div className="location-search-panel">
-                <form onSubmit={handleSearch} className="search-input-wrapper">
-                    <span className="search-icon">🔍</span>
-                    <input
-                        type="text"
-                        placeholder={searching ? "Mencari lokasi..." : "Cari lokasi: ketik nama daerah, kecamatan, atau kota"}
-                        value={searchText}
-                        onChange={e => setSearchText(e.target.value)}
-                        disabled={searching}
-                    />
-                </form>
-            </div>
+            {/* Map UI Overlays Layer */}
+            <div className="map-ui-layer">
+                {/* Search bar floating pill */}
+                <div className="map-search-pill">
+                    <span className="search-icon" style={{ color: 'var(--color-text-muted)', fontSize: '1.2rem', display: 'flex', alignItems: 'center' }}><Search size={20} /></span>
+                    <form onSubmit={handleSearch} style={{ margin: 0, width: '100%' }}>
+                        <input
+                            type="text"
+                            placeholder={searching ? "Mencari lokasi..." : "Cari lokasi daerah atau kota"}
+                            value={searchText}
+                            onChange={e => setSearchText(e.target.value)}
+                            disabled={searching}
+                            style={{ border: 'none', background: 'transparent', width: '100%', outline: 'none', fontSize: '0.95rem', color: 'var(--color-text-primary)' }}
+                        />
+                    </form>
+                </div>
 
-            {/* Zone sidebar */}
-            {showSidebar && zones.length > 0 && (
-                <div className="map-sidebar" style={{ top: 70 }}>
-                    <div className="glass-card">
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                            <h3 style={{ fontSize: '0.9rem', fontWeight: 700 }}>
-                                ⚠️ Zona Bencana Terdekat ({zones.length})
-                            </h3>
-                            <button
-                                className="btn btn-sm btn-outline"
-                                onClick={() => setShowSidebar(false)}
-                                style={{ padding: '2px 8px', fontSize: '0.7rem' }}
-                            >✕</button>
+                {/* Right Panel (Legend & Nearby Shelters) */}
+                <div className="map-right-panel">
+                    <div className="right-panel-section">
+                        <div className="right-panel-title">
+                            Tingkat Banjir Saat Ini
+                            <span style={{ cursor: 'pointer', color: 'var(--color-text-muted)' }}>^</span>
                         </div>
-                        <div className="zone-list">
-                            {zones.slice(0, 10).map((zone, i) => (
-                                <div
-                                    key={zone.id}
-                                    className={`zone-item fade-in fade-in-${i + 1}`}
-                                    onClick={() => {
-                                        setMapCenter({ lat: zone.center_lat, lng: zone.center_lng });
-                                        setSelectedZone(zone);
-                                    }}
-                                >
-                                    <div className="zone-risk-dot" style={{ background: getRiskColor(zone.risk_level) }} />
-                                    <span className="zone-item-name">{zone.name}</span>
-                                    <span className="zone-item-distance">{zone.distance_km} km</span>
+                        <div className="legend-list">
+                            <div className="legend-item-row">
+                                <div className="legend-color-box" style={{ background: '#ef4444' }}></div>
+                                <span>Sangat Tinggi</span>
+                            </div>
+                            <div className="legend-item-row">
+                                <div className="legend-color-box" style={{ background: '#f97316' }}></div>
+                                <span>Tinggi</span>
+                            </div>
+                            <div className="legend-item-row">
+                                <div className="legend-color-box" style={{ background: '#f59e0b' }}></div>
+                                <span>Sedang</span>
+                            </div>
+                            <div className="legend-item-row">
+                                <div className="legend-color-box" style={{ background: '#06b6d4' }}></div>
+                                <span>Rendah</span>
+                            </div>
+                            <div className="legend-item-row">
+                                <div className="legend-color-box" style={{ background: '#10b981' }}></div>
+                                <span>Sangat Rendah</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="right-panel-section">
+                        <div className="right-panel-title">
+                            Posko Pengungsian Terdekat
+                            <span style={{ cursor: 'pointer', color: 'var(--color-text-muted)' }}>^</span>
+                        </div>
+                        <div className="shelter-list-compact">
+                            {/* Render up to 2 actual closest shelters if available */}
+                            {shelters.slice(0, 2).map(shelter => (
+                                <div key={shelter.id} className="shelter-item-compact">
+                                    <div className="legend-icon-box" style={{ color: '#10b981' }}>
+                                        <Home size={16} />
+                                    </div>
+                                    <span>{shelter.name}</span>
                                 </div>
                             ))}
+                            {shelters.length === 0 && (
+                                <div className="shelter-item-compact" style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem' }}>
+                                    Tidak ada shelter aktif di sekitar radius.
+                                </div>
+                            )}
                         </div>
                     </div>
-
-                    {/* Shelter count */}
-                    {shelters.length > 0 && (
-                        <div className="glass-card" style={{ padding: '12px 16px' }}>
-                            <span style={{ fontSize: '0.82rem', color: '#10b981', fontWeight: 600 }}>
-                                🏠 {shelters.length} Shelter Tersedia Terdekat
-                            </span>
-                        </div>
-                    )}
                 </div>
-            )}
 
-            {/* Legend */}
-            <div className="map-legend">
-                <div className="glass-card" style={{ padding: 0 }}>
-                    <div className="legend-items">
-                        <div className="legend-item"><div className="legend-dot" style={{ background: '#ef4444' }} />Risiko Sangat Tinggi</div>
-                        <div className="legend-item"><div className="legend-dot" style={{ background: '#f97316' }} />Risiko Tinggi</div>
-                        <div className="legend-item"><div className="legend-dot" style={{ background: '#f59e0b' }} />Risiko Sedang</div>
-                        <div className="legend-item"><div className="legend-dot" style={{ background: '#06b6d4' }} />Risiko Rendah</div>
-                        <div className="legend-item"><div className="legend-dot" style={{ background: '#10b981' }} />Shelter</div>
-                        <div className="legend-item"><div className="legend-dot" style={{ background: '#3b82f6' }} />Lokasi Anda</div>
+                {/* Bottom Left Shelter Indicator */}
+                {shelters.length > 0 && (
+                    <div className="map-bottom-left-pill">
+                        <span><Home size={18} style={{ display: 'block' }} color="var(--color-success)" /></span>
+                        <span>Posko Pengungsian ({shelters.length}): <span style={{ fontWeight: 400 }}>{shelters[0]?.distance_km} km</span></span>
                     </div>
-                </div>
+                )}
             </div>
 
-            {/* Locate button */}
-            <button className="locate-btn" onClick={() => {
+            {/* Prominent floating action button */}
+            <button className="fab-locate" onClick={() => {
                 requestLocation();
                 setMapCenter(null);
                 if (location) fetchData(location.lat, location.lng);
-                setShowSidebar(true);
             }}>
-                📍 Lokasi Saya
+                <span className="icon" style={{ fontSize: '1.2rem', display: 'flex', alignItems: 'center' }}><Compass size={22} /></span> <span style={{ marginLeft: 6 }}>Lokasi Saya</span>
             </button>
         </div>
     );

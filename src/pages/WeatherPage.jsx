@@ -266,22 +266,69 @@ export default function WeatherPage() {
                 <div className="fade-in">
                     {floodStatus ? (
                         <div className="glass-card">
-                            <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: 12 }}>
-                                🌊 Status Banjir Real-time
-                            </h3>
-                            <pre style={{
-                                fontSize: '0.8rem',
-                                color: 'var(--color-text-secondary)',
-                                whiteSpace: 'pre-wrap',
-                                wordBreak: 'break-word',
-                                background: 'var(--color-surface)',
-                                padding: 16,
-                                borderRadius: 8,
-                                maxHeight: 400,
-                                overflow: 'auto',
-                            }}>
-                                {JSON.stringify(floodStatus, null, 2)}
-                            </pre>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                                <h3 style={{ fontSize: '1rem', fontWeight: 600, margin: 0 }}>
+                                    🌊 Status Banjir Real-time
+                                </h3>
+                                {(floodStatus.fetched_at || floodStatus.last_updated) && (
+                                    <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', textAlign: 'right' }}>
+                                        Terakhir Update:<br />
+                                        {new Date(floodStatus.fetched_at || floodStatus.last_updated).toLocaleString('id-ID')}
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="glass-card" style={{ background: 'var(--color-surface)', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 16 }}>
+                                <div style={{
+                                    fontSize: '2.5rem',
+                                    fontWeight: 700,
+                                    color: floodStatus.total_flooded_areas > 0 ? 'var(--color-danger)' : 'var(--color-success)'
+                                }}>
+                                    {floodStatus.total_flooded_areas ?? 0}
+                                </div>
+                                <div style={{ fontSize: '0.9rem', color: 'var(--color-text-secondary)' }}>
+                                    Area Dilaporkan Tergenang Banjir<br />
+                                    <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>
+                                        Sumber: {floodStatus.source || 'PetaBencana.id'} | Regional: {floodStatus.admin_code || 'jkt'}
+                                    </span>
+                                </div>
+                            </div>
+
+                            {floodStatus.floods && floodStatus.floods.length > 0 ? (
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: 12 }}>
+                                    {floodStatus.floods.map((flood, idx) => (
+                                        <div key={idx} className="glass-card" style={{ padding: 12, borderLeft: `4px solid var(--color-danger)` }}>
+                                            <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>
+                                                {flood.state || flood.village || flood.kelurahan || flood.name || 'Lokasi Tergenang'}
+                                            </div>
+                                            {flood.district && (
+                                                <div style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)', marginBottom: 8 }}>
+                                                    Kecamatan: {flood.district}
+                                                </div>
+                                            )}
+                                            <div style={{ fontSize: '0.8rem', display: 'flex', justifyContent: 'space-between' }}>
+                                                <span style={{ color: 'var(--color-text-muted)' }}>Ketinggian:</span>
+                                                <span style={{ fontWeight: 600, color: 'var(--color-danger)' }}>
+                                                    {flood.level || flood.depth || flood.height || '? '} cm
+                                                </span>
+                                            </div>
+                                            {flood.updated_at && (
+                                                <div style={{ fontSize: '0.7rem', color: 'var(--color-text-muted)', marginTop: 8, textAlign: 'right' }}>
+                                                    Dilaporkan: {new Date(flood.updated_at).toLocaleTimeString('id-ID')}
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="empty-state" style={{ padding: '32px 16px', background: 'var(--color-surface)', borderRadius: 8 }}>
+                                    <div className="empty-icon" style={{ fontSize: '2.5rem', marginBottom: 12 }}>✅</div>
+                                    <div className="empty-text" style={{ fontWeight: 500 }}>Situasi Aman</div>
+                                    <div style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', marginTop: 4 }}>
+                                        Saat ini tidak ada laporan banjir aktif.
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     ) : (
                         <div className="empty-state">

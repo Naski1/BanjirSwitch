@@ -259,6 +259,61 @@ export async function createUser(userData) {
     });
 }
 
+export async function updateUser(userId, data) {
+    return fetchAuthAPI(`/admin/users/${userId}`, {
+        method: 'PUT',
+        body: JSON.stringify(data),
+    });
+}
+
+export async function deleteUser(userId) {
+    return fetchAuthAPI(`/admin/users/${userId}`, {
+        method: 'DELETE',
+    });
+}
+
+// ============ MASTER DATA - BUILDING TYPES ============
+export async function getBuildingTypes() {
+    return fetchAPI('/building-types/');
+}
+
+export async function createBuildingType(data) {
+    return fetchAuthAPI('/building-types/', {
+        method: 'POST',
+        body: JSON.stringify(data),
+    });
+}
+
+export async function updateBuildingType(id, data) {
+    return fetchAuthAPI(`/building-types/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(data),
+    });
+}
+
+export async function deleteBuildingType(id) {
+    return fetchAuthAPI(`/building-types/${id}`, {
+        method: 'DELETE',
+    });
+}
+
+// ============ REGION PROXY ============
+export async function getProvinces() {
+    return fetchAPI('/proxy/provinces');
+}
+
+export async function getCities(provId) {
+    return fetchAPI(`/proxy/cities/${provId}`);
+}
+
+export async function getDistricts(cityId) {
+    return fetchAPI(`/proxy/districts/${cityId}`);
+}
+
+export async function getVillages(distId) {
+    return fetchAPI(`/proxy/villages/${distId}`);
+}
+
 export async function getPetugasCoverage() {
     return fetchAuthAPI('/admin/petugas/coverage', { method: 'GET' });
 }

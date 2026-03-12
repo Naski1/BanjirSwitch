@@ -43,7 +43,7 @@ export default function LocationPickerMap({
     const initialLng = parseFloat(lng) || defaultLocation.lng;
 
     return (
-        <div style={{ height: '300px', width: '100%', borderRadius: '8px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)', position: 'relative', zIndex: 1 }}>
+        <div style={{ height: '300px', width: '100%', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--color-border)', position: 'relative', zIndex: 1 }}>
             <MapContainer
                 center={[initialLat, initialLng]}
                 zoom={12}
@@ -57,7 +57,7 @@ export default function LocationPickerMap({
                 <LocationMarker lat={lat ? parseFloat(lat) : null} lng={lng ? parseFloat(lng) : null} onChange={onChange} />
                 <MapUpdater lat={lat ? parseFloat(lat) : null} lng={lng ? parseFloat(lng) : null} />
             </MapContainer>
-            <div style={{ position: 'absolute', top: 10, left: 50, zIndex: 1000, background: 'rgba(0,0,0,0.6)', color: '#fff', padding: '4px 10px', borderRadius: 4, fontSize: '0.8rem', pointerEvents: 'none' }}>
+            <div style={{ position: 'absolute', top: 10, left: 50, zIndex: 1000, background: 'var(--color-bg-card)', color: 'var(--color-text-primary)', border: '1px solid var(--color-border)', padding: '4px 10px', borderRadius: 4, fontSize: '0.8rem', pointerEvents: 'none', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
                 📍 Klik di mana saja pada peta untuk menempatkan jarum
             </div>
         </div>

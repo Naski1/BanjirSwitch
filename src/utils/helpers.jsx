@@ -1,6 +1,11 @@
 /**
  * Utility helpers for the app
  */
+import {
+    AlertCircle, AlertOctagon, AlertTriangle, CheckCircle, HelpCircle,
+    Waves, BellRing, MountainSnow, Flame, CloudLightning, Home,
+    Droplets, FlameKindling, Pocket, UtensilsCrossed, Settings, Stethoscope
+} from 'lucide-react';
 
 // Risk level color mapping
 export function getRiskColor(level) {
@@ -46,12 +51,12 @@ export function getSeverityBadgeClass(severity) {
 
 export function getSeverityIcon(severity) {
     const map = {
-        extreme: '🔴',
-        severe: '🟠',
-        moderate: '🟡',
-        minor: '🟢',
+        extreme: <AlertOctagon size={16} strokeWidth={2.5} color="#ef4444" />,
+        severe: <AlertCircle size={16} strokeWidth={2.5} color="#f97316" />,
+        moderate: <AlertTriangle size={16} strokeWidth={2.5} color="#f59e0b" />,
+        minor: <CheckCircle size={16} strokeWidth={2.5} color="#10b981" />,
     };
-    return map[severity] || '⚪';
+    return map[severity] || <HelpCircle size={16} strokeWidth={2.5} color="#64748b" />;
 }
 
 // Status mapping for reports
@@ -106,14 +111,14 @@ export function getDisasterLabel(type) {
 
 export function getDisasterIcon(type) {
     const map = {
-        flood: '🌊',
-        earthquake: '🔔',
-        landslide: '⛰️',
-        fire: '🔥',
-        tsunami: '🌊',
-        storm: '⛈️',
+        flood: <Waves size={20} color="#ffffff" />,
+        earthquake: <BellRing size={20} color="#ffffff" />,
+        landslide: <MountainSnow size={20} color="#ffffff" />,
+        fire: <Flame size={20} color="#ffffff" />,
+        tsunami: <Waves size={20} color="#ffffff" />,
+        storm: <CloudLightning size={20} color="#ffffff" />,
     };
-    return map[type] || '⚠️';
+    return map[type] || <AlertTriangle size={20} color="#ffffff" />;
 }
 
 // Shelter type translation
@@ -131,15 +136,19 @@ export function getShelterTypeLabel(type) {
 // Facility label
 export function getFacilityLabel(fac) {
     const map = {
-        toilet: '🚻 Toilet',
-        mushola: '🕌 Mushola',
-        p3k: '🏥 P3K',
-        dapur_umum: '🍳 Dapur Umum',
-        air_bersih: '💧 Air Bersih',
-        lapangan: '🏟️ Lapangan',
-        posko_kesehatan: '⚕️ Posko Kesehatan',
+        toilet: { text: 'Toilet', icon: <Settings size={14} /> },
+        mushola: { text: 'Mushola', icon: <Home size={14} /> },
+        p3k: { text: 'P3K', icon: <Stethoscope size={14} /> },
+        dapur_umum: { text: 'Dapur Umum', icon: <UtensilsCrossed size={14} /> },
+        air_bersih: { text: 'Air Bersih', icon: <Droplets size={14} /> },
+        lapangan: { text: 'Lapangan', icon: <Pocket size={14} /> },
+        posko_kesehatan: { text: 'Posko Kesehatan', icon: <Stethoscope size={14} /> },
     };
-    return map[fac] || fac;
+    // If we use string concat, just return the string. We will modify this to just return the label.
+    // MapPage previously didn't use this directly but we should return safe strings/objects.
+    // For simplicity, returning just text right now, since emojis were mixed.
+    const item = map[fac];
+    return item ? `${item.text}` : fac;
 }
 
 // Default location (Jakarta)
