@@ -8,7 +8,29 @@ import {
 import LocationPickerMap from '../components/LocationPickerMap';
 import RegionPicker from '../components/RegionPicker';
 import { formatDate, timeAgo, getDisasterLabel, getDisasterIcon } from '../utils/helpers';
-import { Edit, Trash2 } from 'lucide-react';
+import { 
+    Edit, Trash2, LayoutDashboard, Users, UserCog, FileText, 
+    Bell, Building, PlusCircle, Search, LogOut, Settings, 
+    MoreHorizontal, MapPin, Activity, ShieldCheck, ChevronRight,
+    Command, HelpCircle, User, Briefcase, AlertTriangle, Droplets
+} from 'lucide-react';
+
+import { 
+    SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarFooter, 
+    SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarGroup, SidebarGroupLabel,
+    SidebarInset, SidebarTrigger, SidebarRail 
+} from "@/components/ui/sidebar"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Input } from "@/components/ui/input"
+import { Separator } from "@/components/ui/separator"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { 
+    DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, 
+    DropdownMenuSeparator, DropdownMenuTrigger 
+} from "@/components/ui/dropdown-menu"
 
 export default function AdminDashboard() {
     const { user, logout } = useAuth();
@@ -149,317 +171,323 @@ export default function AdminDashboard() {
     if (loading) return <div className="min-h-screen flex items-center justify-center bg-[#F5F7FA]"><div className="animate-spin rounded-full h-12 w-12 border-b-4 border-indigo-600"></div></div>;
 
     const navItems = [
-        { id: 'overview', icon: 'dashboard', label: 'Dashboard' },
-        { id: 'users', icon: 'group', label: 'Users' },
-        { id: 'coverage', icon: 'assignment_ind', label: 'Staff Assignments' },
-        { id: 'reports', icon: 'description', label: 'Reports' },
-        { id: 'alerts', icon: 'notifications_active', label: 'Active Alerts' },
-        { id: 'building_types', icon: 'apartment', label: 'Building Types' },
-        { id: 'create_shelter', icon: 'post_add', label: 'Post Input' },
+        { id: 'overview', icon: LayoutDashboard, label: 'Dashboard' },
+        { id: 'users', icon: Users, label: 'Users' },
+        { id: 'coverage', icon: Briefcase, label: 'Staff Assignments' },
+        { id: 'reports', icon: FileText, label: 'Reports' },
+        { id: 'alerts', icon: Bell, label: 'Active Alerts' },
+        { id: 'building_types', icon: Building, label: 'Building Types' },
+        { id: 'create_shelter', icon: PlusCircle, label: 'Post Input' },
     ];
 
     return (
-        <div className="flex min-h-screen bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 antialiased font-sans transition-colors duration-300">
-            {/* Sidebar Navigation */}
-            <aside className="w-72 bg-background-dark dark:bg-slate-950 flex flex-col h-screen sticky top-0 shrink-0 shadow-2xl z-50">
-                <div className="flex items-center gap-4 px-8 py-10">
-                    <div className="w-12 h-12 bg-gradient-to-tr from-primary to-indigo-400 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-primary/30 transform rotate-3 hover:rotate-0 transition-transform cursor-pointer">
-                        <span className="material-symbols-outlined text-3xl font-light">tsunami</span>
-                    </div>
-                    <div className="flex flex-col">
-                        <span className="text-xl font-display font-black tracking-tight text-white leading-none">Resilience</span>
-                        <span className="text-xs font-bold text-primary tracking-[0.2em] uppercase mt-1">Command HQ</span>
-                    </div>
-                </div>
-
-                <nav className="flex-1 space-y-2 mt-2 px-6 overflow-y-auto scrollbar-hide">
-                    <p className="px-4 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-4">Main Menu</p>
-                    {navItems.map(item => (
-                        <a
-                            key={item.id}
-                            href="#"
-                            onClick={(e) => { e.preventDefault(); setActiveTab(item.id); }}
-                            className={`flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all duration-300 group ${activeTab === item.id
-                                ? 'bg-primary text-white shadow-xl shadow-primary/30 translate-x-1'
-                                : 'text-slate-400 hover:text-white hover:bg-white/5'
-                                }`}
-                        >
-                            <span className={`material-symbols-outlined text-2xl transition-transform group-hover:scale-110 ${activeTab === item.id ? 'fill-1' : ''}`}>{item.icon}</span>
-                            <span className="text-sm font-bold tracking-wide">{item.label}</span>
-                            {activeTab === item.id && (
-                                <div className="ml-auto w-1.5 h-1.5 bg-white rounded-full shadow-[0_0_10px_white]"></div>
-                            )}
-                        </a>
-                    ))}
-                </nav>
-
-                <div className="p-6 mt-auto">
-                    <div className="p-5 bg-white/5 border border-white/10 rounded-[2rem] backdrop-blur-md relative overflow-hidden group">
-                        <div className="absolute -right-6 -top-6 w-24 h-24 bg-primary/20 rounded-full blur-2xl group-hover:bg-primary/40 transition-colors"></div>
-                        <div className="flex items-center gap-4 relative z-10">
-                            <div className="w-12 h-12 rounded-full border-2 border-primary/30 p-0.5 shadow-inner">
-                                <img className="w-full h-full rounded-full object-cover" alt="Profile" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB1mRR3N9Y9uxBSphsZRgTa-3eI_oeooJlJCzk565FyY1J6Wjr_MDwLxbfZErDIvXIRA-9YPD9P7UGm7QSwaPuzysUjxn-Q2W5g8uj2JXoDpbRPZYH8hr9NeuFDPfPStiJImQmxzzbxmNiB8yIhC31tLxiatxbkdnld34a1cTGsLY1OGbUtiwuNXLeFeQs0imePrBjpXMpcmYZ9kkZ1B6X3BV2COGqudgBBMmgyGfADphsWwil2m08Vw6xtGlryWxJr4kA9QD_VWn1r" />
+        <SidebarProvider>
+            <div className="flex min-h-screen w-full bg-slate-50/50 dark:bg-slate-950 transition-colors duration-300">
+                <Sidebar collapsible="icon" className="border-r border-slate-200 dark:border-slate-800">
+                    <SidebarHeader className="h-16 flex items-center px-6 border-b border-slate-200 dark:border-slate-800">
+                        <div className="flex items-center gap-3">
+                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                                <Activity className="h-5 w-5" />
                             </div>
-                            <div className="flex-1 min-w-0">
-                                <p className="text-sm font-black text-white truncate">{user?.full_name || 'Super Admin'}</p>
-                                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter truncate">Director of Operations</p>
+                            <div className="flex flex-col gap-0.5 leading-none group-data-[collapsible=icon]:hidden">
+                                <span className="font-bold text-sm">Resilience HQ</span>
+                                <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Admin Panel</span>
                             </div>
                         </div>
-                        <button onClick={logout} className="w-full mt-4 py-2.5 bg-white/5 hover:bg-red-500/10 hover:text-red-500 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-xl border border-white/10 transition-all flex items-center justify-center gap-2">
-                            <span className="material-symbols-outlined text-xs">logout</span> Secure Logout
-                        </button>
-                    </div>
-                </div>
-            </aside>
-
-            {/* Main Content */}
-            <main className="flex-1 overflow-y-auto scroll-smooth">
-                <div className="p-10 lg:p-14 max-w-7xl mx-auto">
-                    {/* Header */}
-                    <header className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-16 relative">
-                        <div className="space-y-1">
-                            <div className="flex items-center gap-2 text-primary font-black text-[10px] uppercase tracking-[0.3em]">
-                                <span className="w-8 h-[2px] bg-primary"></span>
-                                Operations Overview
+                    </SidebarHeader>
+                    <SidebarContent>
+                        <SidebarGroup>
+                            <SidebarGroupLabel>Main Navigation</SidebarGroupLabel>
+                            <SidebarMenu>
+                                {navItems.map((item) => (
+                                    <SidebarMenuItem key={item.id}>
+                                        <SidebarMenuButton
+                                            isActive={activeTab === item.id}
+                                            onClick={() => setActiveTab(item.id)}
+                                            tooltip={item.label}
+                                            className="px-4 py-6 rounded-xl"
+                                        >
+                                            <item.icon className="h-5 w-5" />
+                                            <span className="font-semibold">{item.label}</span>
+                                        </SidebarMenuButton>
+                                    </SidebarMenuItem>
+                                ))}
+                            </SidebarMenu>
+                        </SidebarGroup>
+                    </SidebarContent>
+                    <SidebarFooter className="p-4 border-t border-slate-200 dark:border-slate-800">
+                        <div className="flex items-center gap-3 px-2 py-3 bg-slate-100/50 dark:bg-slate-900/50 rounded-2xl group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:bg-transparent">
+                            <Avatar className="h-9 w-9 border-2 border-primary/20">
+                                <AvatarImage src="https://github.com/shadcn.png" />
+                                <AvatarFallback>SA</AvatarFallback>
+                            </Avatar>
+                            <div className="flex flex-col min-w-0 group-data-[collapsible=icon]:hidden">
+                                <span className="text-sm font-bold truncate">{user?.full_name || 'Super Admin'}</span>
+                                <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-tight">Active Duty</span>
                             </div>
-                            <h1 className="text-5xl font-display font-black tracking-tight text-slate-900 dark:text-white pt-2">
-                                Hello, <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-indigo-400">{user?.full_name?.split(' ')[0] || 'Admiral'}</span>
-                            </h1>
-                            <p className="text-slate-500 dark:text-slate-400 font-medium">Monitoring the frontlines of disaster relief coordination.</p>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="ml-auto h-8 w-8 group-data-[collapsible=icon]:hidden">
+                                        <MoreHorizontal className="h-4 w-4" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-56 rounded-xl">
+                                    <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem className="rounded-lg gap-2">
+                                        <User className="h-4 w-4" /> Profile
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem className="rounded-lg gap-2">
+                                        <Settings className="h-4 w-4" /> Settings
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem onClick={logout} className="rounded-lg gap-2 text-destructive focus:text-destructive">
+                                        <LogOut className="h-4 w-4" /> Logout
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
                         </div>
-                        <div className="flex items-center gap-6">
-                            <div className="relative group">
-                                <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors text-xl">search</span>
-                                <input className="pl-12 pr-6 py-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all w-80 text-sm font-bold shadow-sm" placeholder="Search database indexes..." type="text" />
+                    </SidebarFooter>
+                    <SidebarRail />
+                </Sidebar>
+
+                <SidebarInset className="flex flex-col flex-1 overflow-hidden">
+                    <header className="flex h-16 shrink-0 items-center justify-between gap-2 border-b px-6 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12 bg-white/50 dark:bg-slate-950/50 backdrop-blur-md sticky top-0 z-30">
+                        <div className="flex items-center gap-4">
+                            <SidebarTrigger className="-ml-1" />
+                            <Separator orientation="vertical" className="mr-2 h-4" />
+                            <div className="flex items-center gap-2">
+                                <Badge variant="secondary" className="rounded-lg font-bold">
+                                    V1.0.4
+                                </Badge>
+                                <span className="text-sm font-bold text-muted-foreground uppercase tracking-wider hidden md:inline-block">System Status: Nominal</span>
                             </div>
-                            <div className="flex items-center gap-3">
-                                <button className="p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-slate-400 hover:text-primary hover:border-primary/30 hover:shadow-xl transition-all relative">
-                                    <span className="material-symbols-outlined">notifications</span>
-                                    <span className="absolute top-3 right-3 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white dark:border-slate-900"></span>
-                                </button>
-                                <button className="p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-slate-400 hover:text-primary hover:border-primary/30 hover:shadow-xl transition-all">
-                                    <span className="material-symbols-outlined">settings</span>
-                                </button>
+                        </div>
+                        <div className="flex items-center gap-4">
+                            <div className="relative hidden md:flex items-center">
+                                <Search className="absolute left-3 h-4 w-4 text-muted-foreground" />
+                                <Input 
+                                    placeholder="Search command..." 
+                                    className="w-72 pl-9 bg-slate-100/50 dark:bg-slate-900/50 border-none rounded-xl focus-visible:ring-primary/20 h-9 font-semibold text-sm"
+                                />
                             </div>
+                            <Button variant="ghost" size="icon" className="rounded-xl relative">
+                                <Bell className="h-5 w-5" />
+                                <span className="absolute top-2 right-2 w-2 h-2 bg-destructive rounded-full border-2 border-background"></span>
+                            </Button>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="rounded-xl">
+                                        <Settings className="h-5 w-5" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-56 rounded-xl">
+                                    <DropdownMenuLabel>Global Settings</DropdownMenuLabel>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem className="rounded-lg">Dark Mode</DropdownMenuItem>
+                                    <DropdownMenuItem className="rounded-lg">System Logs</DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
                         </div>
                     </header>
 
-                    {activeTab === 'overview' && (
-                        <>
-                            {/* KPI Cards */}
-                {/* KPI Section */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
-                    {/* Active Reports Card */}
-                    <div className="glass hover:glass-dark group transition-all duration-500 rounded-[2.5rem] p-8 relative overflow-hidden cursor-pointer border-indigo-500/20">
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full -mr-16 -mt-16 blur-3xl group-hover:bg-indigo-500/20 transition-colors"></div>
-                        <div className="flex justify-between items-start mb-6">
-                            <div className="w-14 h-14 bg-indigo-50 dark:bg-indigo-950 rounded-2xl flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
-                                <span className="material-symbols-outlined text-3xl font-light">notification_important</span>
-                            </div>
-                            <div className="flex flex-col items-end">
-                                <span className="text-[10px] font-black text-red-500 bg-red-50 px-3 py-1 rounded-full uppercase tracking-widest shadow-sm">Critical</span>
-                                <span className="text-[10px] font-bold text-slate-400 mt-2">ID: E-229</span>
-                            </div>
-                        </div>
-                        <p className="text-slate-500 dark:text-slate-400 text-xs font-black uppercase tracking-[0.15em]">Laporan Aktif</p>
-                        <h3 className="text-4xl font-display font-black mt-2 text-slate-900 dark:text-white leading-none tracking-tight">
-                            {activeFieldReports.length.toLocaleString()}
-                        </h3>
-                        <div className="mt-6 flex items-center gap-2 text-[10px] font-bold text-slate-400">
-                            <span className="material-symbols-outlined text-xs text-green-500">trending_up</span>
-                            <span className="text-green-500">+12%</span> vs last period
-                        </div>
-                    </div>
-
-                    {/* Affected Coverage Card */}
-                    <div className="glass hover:glass-dark group transition-all duration-500 rounded-[2.5rem] p-8 relative overflow-hidden cursor-pointer border-purple-500/20">
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/10 rounded-full -mr-16 -mt-16 blur-3xl group-hover:bg-purple-500/20 transition-colors"></div>
-                        <div className="flex justify-between items-start mb-6">
-                            <div className="w-14 h-14 bg-purple-50 dark:bg-purple-950 rounded-2xl flex items-center justify-center text-purple-600 group-hover:scale-110 transition-transform">
-                                <span className="material-symbols-outlined text-3xl font-light">map_visualize</span>
-                            </div>
-                            <div className="flex flex-col items-end">
-                                <span className="text-[10px] font-black text-amber-500 bg-amber-50 px-3 py-1 rounded-full uppercase tracking-widest shadow-sm">Warning</span>
-                                <span className="text-[10px] font-bold text-slate-400 mt-2">3 Zones</span>
-                            </div>
-                        </div>
-                        <p className="text-slate-500 dark:text-slate-400 text-xs font-black uppercase tracking-[0.15em]">Wilayah Terdampak</p>
-                        <h3 className="text-4xl font-display font-black mt-2 text-slate-900 dark:text-white leading-none tracking-tight">
-                            {coverage.length.toLocaleString()}
-                        </h3>
-                        <div className="mt-6 flex items-center gap-2 text-[10px] font-bold text-slate-400">
-                            <span className="material-symbols-outlined text-xs text-amber-500">emergency</span>
-                            Current Alert Level: <span className="text-amber-500">Orange</span>
-                        </div>
-                    </div>
-
-                    {/* Relawan Card */}
-                    <div className="glass hover:glass-dark group transition-all duration-500 rounded-[2.5rem] p-8 relative overflow-hidden cursor-pointer border-green-500/20">
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-green-500/10 rounded-full -mr-16 -mt-16 blur-3xl group-hover:bg-green-500/20 transition-colors"></div>
-                        <div className="flex justify-between items-start mb-6">
-                            <div className="w-14 h-14 bg-green-50 dark:bg-green-950 rounded-2xl flex items-center justify-center text-green-600 group-hover:scale-110 transition-transform">
-                                <span className="material-symbols-outlined text-3xl font-light">volunteer_activism</span>
-                            </div>
-                            <div className="flex flex-col items-end">
-                                <span className="text-[10px] font-black text-green-600 bg-green-50 px-3 py-1 rounded-full uppercase tracking-widest shadow-sm">Active</span>
-                                <span className="text-[10px] font-bold text-slate-400 mt-2">24h Shift</span>
-                            </div>
-                        </div>
-                        <p className="text-slate-500 dark:text-slate-400 text-xs font-black uppercase tracking-[0.15em]">Relawan Siaga</p>
-                        <h3 className="text-4xl font-display font-black mt-2 text-slate-900 dark:text-white leading-none tracking-tight">
-                            {petugasCount.toLocaleString()}
-                        </h3>
-                        <div className="mt-6 flex items-center gap-2 text-[10px] font-bold text-slate-400">
-                            <span className="material-symbols-outlined text-xs text-blue-500">info</span>
-                            Response Capacity: <span className="text-blue-500">High</span>
-                        </div>
-                    </div>
-
-                    {/* Water Level Card */}
-                    <div className="glass hover:glass-dark group transition-all duration-500 rounded-[2.5rem] p-8 relative overflow-hidden cursor-pointer border-amber-500/20">
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 rounded-full -mr-16 -mt-16 blur-3xl group-hover:bg-amber-500/20 transition-colors"></div>
-                        <div className="flex justify-between items-start mb-6">
-                            <div className="w-14 h-14 bg-amber-50 dark:bg-amber-950 rounded-2xl flex items-center justify-center text-amber-600 group-hover:scale-110 transition-transform">
-                                <span className="material-symbols-outlined text-3xl font-light">water_drop</span>
-                            </div>
-                            <div className="flex flex-col items-end">
-                                <span className="text-[10px] font-black text-blue-600 bg-blue-50 px-3 py-1 rounded-full uppercase tracking-widest shadow-sm">Normal</span>
-                                <span className="text-[10px] font-bold text-slate-400 mt-2">Real-time</span>
-                            </div>
-                        </div>
-                        <p className="text-slate-500 dark:text-slate-400 text-xs font-black uppercase tracking-[0.15em]">Tinggi Air (m)</p>
-                        <h3 className="text-4xl font-display font-black mt-2 text-slate-900 dark:text-white leading-none tracking-tight">
-                            {fieldReports.length > 0
-                                ? (fieldReports.reduce((acc, r) => acc + (r.water_level_cm || 0), 0) / (fieldReports.length * 100)).toFixed(2)
-                                : '0.00'}
-                        </h3>
-                        <div className="mt-6 flex items-center gap-2 text-[10px] font-bold text-slate-400">
-                            <span className="material-symbols-outlined text-xs text-slate-400">monitor_heart</span>
-                            Sensor Status: <span className="text-green-500 font-black">ACTIVE</span>
-                        </div>
-                    </div>
-                </div>                            {/* Main Grid: Left (Col 1-2) / Right (Col 3) */}
-                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 items-start">
-                                {/* Recent Reports List */}
-                                <div className="lg:col-span-2 space-y-8">
-                                    <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 overflow-hidden shadow-premium group">
-                                        <div className="p-10 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/20">
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-1.5 h-6 bg-primary rounded-full"></div>
-                                                <h2 className="text-2xl font-display font-black tracking-tight text-slate-900 dark:text-white">Recent Field Reports</h2>
-                                            </div>
-                                            <button onClick={() => setActiveTab('reports')} className="px-6 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-primary text-xs font-black uppercase tracking-widest hover:bg-primary hover:text-white hover:shadow-lg transition-all">View Intelligence</button>
-                                        </div>
-                                        <div className="divide-y divide-slate-100 dark:divide-slate-800">
-                                            {fieldReports.slice(0, 3).map((r) => (
-                                                <div key={r.id} className="p-8 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all duration-300 group/item">
-                                                    <div className="flex items-center gap-6">
-                                                        <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center overflow-hidden group-hover/item:scale-110 transition-transform shadow-inner">
-                                                            <div className="w-full h-full flex items-center justify-center text-slate-400 group-hover/item:text-primary transition-colors">
-                                                                {getDisasterIcon(r.disaster_type)}
-                                                            </div>
-                                                        </div>
-                                                        <div className="space-y-1">
-                                                            <p className="text-lg font-black text-slate-900 dark:text-white group-hover/item:text-primary transition-colors">{r.location_name}</p>
-                                                            <div className="flex items-center gap-3 text-xs font-bold text-slate-500 uppercase tracking-tight">
-                                                                <span className="flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">person</span> {r.reporter_id}</span>
-                                                                <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
-                                                                <span className="flex items-center gap-1 font-black text-primary">{r.severity}</span>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div className="text-right space-y-2">
-                                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Time Reported</p>
-                                                        <p className="text-sm font-bold text-slate-600 dark:text-slate-300">{new Date(r.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • 1 hari lalu</p>
-                                                        <span className={`inline-block px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${r.status === 'active' ? 'bg-red-50 text-red-500' : 'bg-green-50 text-green-500'}`}>{r.status}</span>
-                                                    </div>
-                                                </div>
-                                            ))}
-                                            {fieldReports.length === 0 && (
-                                                <div className="p-20 text-center space-y-4">
-                                                    <div className="w-20 h-20 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto text-slate-300">
-                                                        <span className="material-symbols-outlined text-4xl">inventory_2</span>
-                                                    </div>
-                                                    <p className="text-slate-400 font-bold tracking-tight">No intelligence reports documented yet.</p>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-
-                                    {/* User Distribution Grid */}
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                                        {[
-                                            { label: 'Registered Citizens', count: userCount, icon: 'diversity_3', color: 'bg-primary', lightColor: 'bg-indigo-50' },
-                                            { label: 'Field Staff', count: petugasCount, icon: 'clinical_notes', color: 'bg-blue-500', lightColor: 'bg-blue-50' },
-                                            { label: 'Administrators', count: adminCount, icon: 'admin_panel_settings', color: 'bg-slate-900', lightColor: 'bg-slate-50' }
-                                        ].map((stat, i) => (
-                                            <div key={i} className="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 shadow-premium hover:-translate-y-1 transition-transform group">
-                                                <div className={`w-12 h-12 ${stat.lightColor} dark:bg-slate-800 rounded-2xl flex items-center justify-center text-slate-600 dark:text-slate-400 mb-6 group-hover:scale-110 transition-transform`}>
-                                                    <span className="material-symbols-outlined text-2xl">{stat.icon}</span>
-                                                </div>
-                                                <h4 className="text-3xl font-display font-black text-slate-900 dark:text-white leading-none">{stat.count}</h4>
-                                                <p className="text-xs font-black text-slate-400 uppercase tracking-widest mt-2">{stat.label}</p>
-                                                <div className="mt-6 w-full h-1.5 bg-slate-50 dark:bg-slate-800 rounded-full overflow-hidden">
-                                                    <div className={`h-full ${stat.color} rounded-full`} style={{ width: `${users.length ? (stat.count / users.length) * 100 : 0}%` }}></div>
-                                                </div>
-                                                <p className="mt-3 text-[10px] font-bold text-slate-400">{users.length ? Math.round((stat.count / users.length) * 100) : 0}% of global index</p>
-                                            </div>
-                                        ))}
-                                    </div>
+                    <ScrollArea className="flex-1">
+                        <div className="p-6 lg:p-10 max-w-7xl mx-auto space-y-10">
+                            {/* Page Header */}
+                            <div className="space-y-2">
+                                <div className="flex items-center gap-2 text-primary font-bold text-[10px] uppercase tracking-[0.3em]">
+                                    <Separator className="w-8 bg-primary" />
+                                    Operational Intelligence
                                 </div>
+                                <h1 className="text-4xl font-display font-black tracking-tight pt-2">
+                                    Officer, <span className="text-primary">{user?.full_name?.split(' ')[0] || 'Admin'}</span>
+                                </h1>
+                                <p className="text-muted-foreground font-medium">Coordinate crisis response across all monitored sectors.</p>
+                            </div>
 
-                                {/* Active Alerts & Health Monitor (Right Column) */}
-                                <div className="space-y-8">
-                                    <div className="glass hover:glass-dark transition-all duration-500 p-10 rounded-[2.5rem] flex flex-col items-center justify-center min-h-[450px] text-center border-indigo-500/10 group">
-                                        <div className={`w-32 h-32 rounded-full flex items-center justify-center mb-8 relative ${alerts.length === 0 ? 'bg-green-50' : 'bg-red-50'}`}>
-                                            <div className={`absolute inset-0 rounded-full animate-ping opacity-20 ${alerts.length === 0 ? 'bg-green-500' : 'bg-red-500'}`}></div>
-                                            <span className={`material-symbols-outlined text-6xl relative z-10 ${alerts.length === 0 ? 'text-green-500' : 'text-red-500'}`}>
-                                                {alerts.length === 0 ? 'verified_user' : 'warning_off'}
-                                            </span>
-                                        </div>
-                                        <h3 className="text-3xl font-display font-black text-slate-900 dark:text-white tracking-tight">{alerts.length === 0 ? 'System Nominal' : `${alerts.length} Active Alerts`}</h3>
-                                        <p className="text-slate-500 dark:text-slate-400 mt-4 leading-relaxed font-medium">
-                                            {alerts.length === 0
-                                                ? "Current status indicates absolute clearance across all monitored zones."
-                                                : "Active alerts detected. Response coordination is advised immediately."}
-                                        </p>
-                                        <button onClick={() => setActiveTab('alerts')} className="mt-10 w-full py-4 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl text-xs font-black uppercase tracking-[0.2em] shadow-sm hover:shadow-xl hover:text-primary transition-all">Audit History</button>
+                            {activeTab === 'overview' && (
+                                <div className="space-y-10">
+                                    {/* KPI Section */}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                                        <Card className="border-none shadow-xl bg-gradient-to-br from-indigo-500 to-indigo-600 dark:from-indigo-600 dark:to-indigo-700 text-white overflow-hidden relative group transition-transform hover:-translate-y-1">
+                                            <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+                                                <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] opacity-80 text-white">Laporan Aktif</CardTitle>
+                                                <AlertTriangle className="h-5 w-5 opacity-80" />
+                                            </CardHeader>
+                                            <CardContent>
+                                                <div className="text-4xl font-black">{activeFieldReports.length.toLocaleString()}</div>
+                                                <p className="text-[10px] font-bold mt-2 opacity-80 flex items-center gap-1">
+                                                    <Activity className="h-3 w-3" /> Critical Response Required
+                                                </p>
+                                            </CardContent>
+                                            <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-colors"></div>
+                                        </Card>
+
+                                        <Card className="border-none shadow-xl bg-gradient-to-br from-amber-500 to-amber-600 text-white overflow-hidden relative group transition-transform hover:-translate-y-1">
+                                            <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+                                                <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] opacity-80 text-white">Wilayah Terdampak</CardTitle>
+                                                <MapPin className="h-5 w-5 opacity-80" />
+                                            </CardHeader>
+                                            <CardContent>
+                                                <div className="text-4xl font-black">{coverage.length.toLocaleString()}</div>
+                                                <p className="text-[10px] font-bold mt-2 opacity-80 flex items-center gap-1">
+                                                    <ShieldCheck className="h-3 w-3" /> 3 Zones Under Warning
+                                                </p>
+                                            </CardContent>
+                                            <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-colors"></div>
+                                        </Card>
+
+                                        <Card className="border-none shadow-xl bg-gradient-to-br from-emerald-500 to-emerald-600 text-white overflow-hidden relative group transition-transform hover:-translate-y-1">
+                                            <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+                                                <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] opacity-80 text-white">Relawan Siaga</CardTitle>
+                                                <Users className="h-5 w-5 opacity-80" />
+                                            </CardHeader>
+                                            <CardContent>
+                                                <div className="text-4xl font-black">{petugasCount.toLocaleString()}</div>
+                                                <p className="text-[10px] font-bold mt-2 opacity-80 flex items-center gap-1">
+                                                    <Briefcase className="h-3 w-3" /> 24h Deployment Ready
+                                                </p>
+                                            </CardContent>
+                                            <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-colors"></div>
+                                        </Card>
+
+                                        <Card className="border-none shadow-xl bg-gradient-to-br from-blue-500 to-blue-600 text-white overflow-hidden relative group transition-transform hover:-translate-y-1">
+                                            <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+                                                <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] opacity-80 text-white">Tinggi Air (m)</CardTitle>
+                                                <Droplets className="h-5 w-5 opacity-80" />
+                                            </CardHeader>
+                                            <CardContent>
+                                                <div className="text-4xl font-black">
+                                                    {fieldReports.length > 0
+                                                        ? (fieldReports.reduce((acc, r) => acc + (r.water_level_cm || 0), 0) / (fieldReports.length * 100)).toFixed(2)
+                                                        : '0.00'}
+                                                </div>
+                                                <p className="text-[10px] font-bold mt-2 opacity-80 flex items-center gap-1">
+                                                    <Activity className="h-3 w-3" /> Sensor Health: Optimal
+                                                </p>
+                                            </CardContent>
+                                            <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-colors"></div>
+                                        </Card>
                                     </div>
-
-                                    <div className="bg-primary p-10 rounded-[2.5rem] relative overflow-hidden group shadow-2xl shadow-primary/20">
-                                        <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 blur-3xl group-hover:bg-white/20 transition-all duration-700"></div>
-                                        <div className="relative z-10 flex flex-col gap-6">
-                                            <div className="flex justify-between items-center">
-                                                <h4 className="text-white font-display font-black text-xl tracking-tight leading-none group-hover:translate-x-1 transition-transform">Real-time Coverage</h4>
-                                                <span className="material-symbols-outlined text-white/50 text-2xl group-hover:rotate-12 transition-transform">monitoring</span>
-                                            </div>
-                                            <div className="flex items-end gap-3 h-24">
-                                                {[30, 60, 45, 80, 55, 90, 70].map((h, i) => (
-                                                    <div key={i} className="flex-1 bg-white/20 rounded-full relative group/bar hover:bg-white/40 transition-all" style={{ height: `${h}%` }}>
-                                                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-white text-primary text-[8px] font-black px-1.5 py-0.5 rounded opacity-0 group-hover/bar:opacity-100 transition-opacity">72%</div>
+                                    {/* Main Grid: Left (Col 1-2) / Right (Col 3) */}
+                                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+                                        {/* Recent Reports List */}
+                                        <div className="lg:col-span-2 space-y-8">
+                                            <Card className="border-none shadow-sm overflow-hidden bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm">
+                                                <CardHeader className="flex flex-row items-center justify-between p-6 bg-slate-100/30 dark:bg-slate-800/20">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-1 h-6 bg-primary rounded-full"></div>
+                                                        <CardTitle className="text-xl font-black">Recent Field Intelligence</CardTitle>
                                                     </div>
+                                                    <Button variant="outline" size="sm" onClick={() => setActiveTab('reports')} className="rounded-xl font-bold uppercase tracking-widest text-[10px]">Audit All</Button>
+                                                </CardHeader>
+                                                <CardContent className="p-0">
+                                                    <div className="divide-y divide-slate-200/50 dark:divide-slate-800/50">
+                                                        {fieldReports.slice(0, 4).map((r) => (
+                                                            <div key={r.id} className="p-6 flex items-center justify-between hover:bg-white dark:hover:bg-slate-900 transition-all duration-300 group/item">
+                                                                <div className="flex items-center gap-4">
+                                                                    <div className="w-12 h-12 bg-slate-100 dark:bg-slate-800 rounded-xl flex items-center justify-center shadow-inner group-hover/item:scale-110 transition-transform">
+                                                                        <Activity className="h-6 w-6 text-slate-400 group-hover/item:text-primary transition-colors" />
+                                                                    </div>
+                                                                    <div className="space-y-1">
+                                                                        <p className="font-bold text-slate-900 dark:text-white group-hover/item:text-primary transition-colors">{r.location_name}</p>
+                                                                        <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground uppercase">
+                                                                            <span className="flex items-center gap-1"><User className="h-3 w-3" /> {r.reporter_id}</span>
+                                                                            <Separator orientation="vertical" className="h-2" />
+                                                                            <span className="font-black text-primary">{r.severity}</span>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div className="text-right flex flex-col items-end gap-2">
+                                                                    <Badge variant={r.status === 'active' ? 'destructive' : 'secondary'} className="rounded-lg font-black uppercase tracking-widest text-[9px] px-2 py-0.5">
+                                                                        {r.status}
+                                                                    </Badge>
+                                                                    <p className="text-[10px] font-bold text-muted-foreground">{timeAgo(r.timestamp)}</p>
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                        {fieldReports.length === 0 && (
+                                                            <div className="p-12 text-center text-muted-foreground font-medium">No intelligence reported yet.</div>
+                                                        )}
+                                                    </div>
+                                                </CardContent>
+                                            </Card>
+
+                                            {/* User Distribution Grid */}
+                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                                {[
+                                                    { label: 'Citizens', count: userCount, icon: Users, color: 'bg-primary' },
+                                                    { label: 'Staff', count: petugasCount, icon: UserCog, color: 'bg-blue-500' },
+                                                    { label: 'Admins', count: adminCount, icon: ShieldCheck, color: 'bg-slate-900' }
+                                                ].map((stat, i) => (
+                                                    <Card key={i} className="border-none shadow-sm hover:shadow-md transition-shadow group overflow-hidden">
+                                                        <CardContent className="p-6">
+                                                            <div className="flex items-center justify-between mb-4">
+                                                                <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded-lg text-slate-500 group-hover:scale-110 transition-transform">
+                                                                    <stat.icon className="h-5 w-5" />
+                                                                </div>
+                                                                <span className="text-[10px] font-black text-muted-foreground">{Math.round((stat.count / (users.length || 1)) * 100)}%</span>
+                                                            </div>
+                                                            <div className="text-2xl font-black">{stat.count}</div>
+                                                            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">{stat.label}</p>
+                                                            <div className="mt-4 w-full h-1 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                                                                <div className={`h-full ${stat.color} transition-all duration-1000`} style={{ width: `${users.length ? (stat.count / users.length) * 100 : 0}%` }}></div>
+                                                            </div>
+                                                        </CardContent>
+                                                    </Card>
                                                 ))}
                                             </div>
-                                            <div className="pt-2">
-                                                <p className="text-white/60 text-[10px] font-black uppercase tracking-widest">Network Health Status</p>
-                                                <p className="text-white font-bold text-sm mt-1 flex items-center gap-2">
-                                                    <span className="w-2 h-2 bg-green-400 rounded-full shadow-[0_0_10px_#4ade80]"></span>
-                                                    Optimal Performance
+                                        </div>
+
+                                        {/* Right Column: Alerts & Monitoring */}
+                                        <div className="space-y-8">
+                                            <Card className={`border-none shadow-sm overflow-hidden text-center p-8 flex flex-col items-center justify-center min-h-[350px] transition-all group ${alerts.length === 0 ? 'bg-emerald-50/50 dark:bg-emerald-950/10' : 'bg-destructive/5'}`}>
+                                                <div className={`w-24 h-24 rounded-full flex items-center justify-center mb-6 relative ${alerts.length === 0 ? 'bg-emerald-100 dark:bg-emerald-900/50' : 'bg-destructive/10'}`}>
+                                                    {alerts.length === 0 ? (
+                                                        <ShieldCheck className="h-12 w-12 text-emerald-600 dark:text-emerald-400 z-10" />
+                                                    ) : (
+                                                        <AlertTriangle className="h-12 w-12 text-destructive z-10" />
+                                                    )}
+                                                    <div className={`absolute inset-0 rounded-full animate-ping opacity-20 ${alerts.length === 0 ? 'bg-emerald-500' : 'bg-destructive'}`}></div>
+                                                </div>
+                                                <CardTitle className="text-2xl font-black">{alerts.length === 0 ? 'System Nominal' : `${alerts.length} Active Alerts`}</CardTitle>
+                                                <p className="text-sm font-medium text-muted-foreground mt-4 max-w-[200px]">
+                                                    {alerts.length === 0 ? 'Secure environment confirmed across all sectors.' : 'Priority response required in multiple sectors.'}
                                                 </p>
-                                            </div>
+                                                <Button variant="outline" className="mt-8 w-full rounded-xl font-bold uppercase tracking-widest text-[10px]" onClick={() => setActiveTab('alerts')}>Audit Alerts</Button>
+                                            </Card>
+
+                                            <Card className="border-none shadow-xl bg-primary text-white overflow-hidden relative group p-8">
+                                                <div className="relative z-10 space-y-6">
+                                                    <div className="flex justify-between items-center">
+                                                        <h4 className="font-bold text-lg tracking-tight">Real-time Coverage</h4>
+                                                        <Activity className="h-5 w-5 opacity-50" />
+                                                    </div>
+                                                    <div className="flex items-end gap-2 h-24">
+                                                        {[30, 60, 45, 80, 55, 90, 70].map((h, i) => (
+                                                            <div key={i} className="flex-1 bg-white/20 rounded-full hover:bg-white/40 transition-all cursor-crosshair" style={{ height: `${h}%` }} />
+                                                        ))}
+                                                    </div>
+                                                    <div className="pt-2">
+                                                        <p className="text-[10px] font-bold opacity-70 uppercase tracking-widest">Global Index Status</p>
+                                                        <div className="flex items-center gap-2 mt-1">
+                                                            <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse shadow-[0_0_10px_#4ade80]" />
+                                                            <span className="text-sm font-black">Optimal Sync</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="absolute -right-12 -top-12 w-48 h-48 bg-white/5 rounded-full blur-3xl group-hover:bg-white/10 transition-all"></div>
+                                            </Card>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        </>
-                    )}
+                            )}
 
-                    {/* Sub-Tabs Wrapper for spacing consistency */}
-                    {activeTab !== 'overview' && (
-                        <div className="bg-white rounded-[1.5rem] shadow-sm p-8 pb-12 border border-slate-100/50">
-                            {/* Users Tab */}
-                            {activeTab === 'users' && (
-                                <div>
+                            {activeTab !== 'overview' && (
+                                <Card className="border-none shadow-sm p-8 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm">
+                                    {/* Users Tab */}
+                                    {activeTab === 'users' && (
+                                        <div>
                                     <div className="flex justify-between items-center mb-8">
                                         <h2 className="text-2xl font-bold">Users Directory</h2>
                                         <div className="flex gap-4">
@@ -795,12 +823,14 @@ export default function AdminDashboard() {
                                         </button>
                                     </form>
                                 </div>
+                                    )}
+                                </Card>
                             )}
                         </div>
-                    )}
-                </div>
-            </main>
-        </div>
+                    </ScrollArea>
+                </SidebarInset>
+            </div>
+        </SidebarProvider>
     );
 }
 
