@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { getFieldReports, createFieldReport, updateFieldReport, getNearbyZones, createShelter } from '../services/api';
+import { getFieldReports, createFieldReport, updateFieldReport, getNearbyZones, createShelter, getMyShelter, updateShelterOccupancy, updateShelterStatus } from '../services/api';
 import { useGeolocation } from '../hooks/useGeolocation';
 import LocationPickerMap from '../components/LocationPickerMap';
 import { getDisasterLabel, getDisasterIcon, timeAgo, formatDate } from '../utils/helpers';
 import {
     LayoutDashboard, Map as MapIcon, FileText, PlusCircle,
-    LogOut, AlertTriangle, ShieldAlert, CheckCircle, Waves, HardHat
+    LogOut, AlertTriangle, ShieldAlert, CheckCircle, Waves, HardHat, Home, Users
 } from 'lucide-react';
 
 const severityOptions = [
@@ -43,6 +43,7 @@ export default function PetugasDashboard() {
         description: '',
         lat: '',
         lng: '',
+        impact_radius_km: 1.0,
     });
     const [formLoading, setFormLoading] = useState(false);
     const [formError, setFormError] = useState('');
@@ -56,10 +57,65 @@ export default function PetugasDashboard() {
     const [locationUsed, setLocationUsed] = useState(false);
     const [gettingLocation, setGettingLocation] = useState(false);
     const [showManualCoords, setShowManualCoords] = useState(false);
+    
+    // Shelter management states
+    const [myShelter, setMyShelter] = useState(null);
+    const [myShelterLoading, setMyShelterLoading] = useState(false);
+    const [myShelterError, setMyShelterError] = useState('');
+    const [occupancyInput, setOccupancyInput] = useState('');
+    const [shelterActionLoading, setShelterActionLoading] = useState(false);
+    const [shelterActionMsg, setShelterActionMsg] = useState('');
 
     useEffect(() => {
         loadData();
     }, []);
+
+    useEffect(() => {
+        if (activeTab === 'my_shelter') {
+            loadMyShelter();
+        }
+    }, [activeTab]);
+
+    async function loadMyShelter() {
+        setMyShelterLoading(true);
+        setMyShelterError('');
+        try {
+            const data = await getMyShelter();
+            setMyShelter(data);
+            setOccupancyInput(data.current_occupancy?.toString() || '0');
+        } catch (err) {
+            setMyShelterError(err.message || 'Gagal memuat data shelter');
+            setMyShelter(null);
+        }
+        setMyShelterLoading(false);
+    }
+
+    async function handleUpdateOccupancy() {
+        setShelterActionLoading(true);
+        setShelterActionMsg('');
+        try {
+            const res = await updateShelterOccupancy(parseInt(occupancyInput) || 0);
+            setShelterActionMsg(res.message);
+            await loadMyShelter();
+        } catch (err) {
+            setShelterActionMsg('❌ ' + (err.message || 'Gagal update'));
+        }
+        setShelterActionLoading(false);
+    }
+
+    async function handleToggleStatus() {
+        if (!myShelter) return;
+        setShelterActionLoading(true);
+        setShelterActionMsg('');
+        try {
+            const res = await updateShelterStatus(!myShelter.is_open);
+            setShelterActionMsg(res.message);
+            await loadMyShelter();
+        } catch (err) {
+            setShelterActionMsg('❌ ' + (err.message || 'Gagal update'));
+        }
+        setShelterActionLoading(false);
+    }
 
     // Auto-fill location when available
     useEffect(() => {
@@ -143,12 +199,13 @@ export default function PetugasDashboard() {
                 description: formData.description || null,
                 lat: formData.lat ? parseFloat(formData.lat) : (location?.lat || null),
                 lng: formData.lng ? parseFloat(formData.lng) : (location?.lng || null),
+                impact_radius_km: formData.impact_radius_km ? parseFloat(formData.impact_radius_km) : 1.0,
             };
             await createFieldReport(payload);
             setFormSuccess('✅ Laporan berhasil dibuat!');
             setShowForm(false);
             await loadData();
-            setFormData(prev => ({ ...prev, description: '', water_level_cm: '', affected_people: '' }));
+            setFormData(prev => ({ ...prev, description: '', water_level_cm: '', affected_people: '', impact_radius_km: 1.0 }));
         } catch (err) {
             setFormError(err.message || 'Gagal membuat laporan');
         }
@@ -208,6 +265,7 @@ export default function PetugasDashboard() {
         { key: 'overview', label: 'Laporan Saya', icon: <FileText size={20} /> },
         { key: 'create', label: 'Input Bencana', icon: <PlusCircle size={20} /> },
         { key: 'create_shelter', label: 'Input Posko', icon: <PlusCircle size={20} /> },
+        { key: 'my_shelter', label: 'Kelola Posko', icon: <Home size={20} /> },
         { key: 'zones', label: 'Zona Aktif', icon: <AlertTriangle size={20} /> },
     ];
 
@@ -222,7 +280,7 @@ export default function PetugasDashboard() {
                     </div>
                     <div>
                         <div style={{ fontWeight: 700, fontSize: '1.05rem', color: 'var(--color-text-primary)' }}>Petugas Lapangan</div>
-                        <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>BanjirWatch Ops</div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>Operasional BanjirWatch</div>
                     </div>
                 </div>
 
@@ -321,7 +379,7 @@ export default function PetugasDashboard() {
                                                     </div>
                                                     <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                                                         <span className={`badge ${r.status === 'active' ? 'badge-danger' : r.status === 'resolved' ? 'badge-success' : 'badge-neutral'}`}>
-                                                            {r.status}
+                                                            {r.status === 'active' ? 'Aktif' : r.status === 'resolved' ? 'Selesai' : 'Kedaluwarsa'}
                                                         </span>
                                                         <span className={`badge ${r.severity === 'extreme' ? 'badge-danger' : r.severity === 'severe' ? 'badge-warning' : 'badge-info'}`}>
                                                             {r.severity}
@@ -389,15 +447,32 @@ export default function PetugasDashboard() {
                                         </div>
                                     </div>
                                     <div className="form-row two-col">
-                                        <div className="form-group">
-                                            <label>💧 Ketinggian Air (cm)</label>
-                                            <input type="number" placeholder="Contoh: 50" value={formData.water_level_cm}
-                                                onChange={e => setFormData(p => ({ ...p, water_level_cm: e.target.value }))} />
-                                        </div>
-                                        <div className="form-group">
+                                        {formData.disaster_type === 'flood' && (
+                                            <div className="form-group">
+                                                <label>💧 Ketinggian Air (cm)</label>
+                                                <input type="number" placeholder="Contoh: 50" value={formData.water_level_cm}
+                                                    onChange={e => setFormData(p => ({ ...p, water_level_cm: e.target.value }))} />
+                                            </div>
+                                        )}
+                                        <div className="form-group" style={{ 
+                                            // Make this field take full width if the water level field is hidden
+                                            gridColumn: formData.disaster_type !== 'flood' ? '1 / -1' : 'auto' 
+                                        }}>
                                             <label>👥 Jumlah Terdampak</label>
                                             <input type="number" placeholder="Contoh: 100" value={formData.affected_people}
                                                 onChange={e => setFormData(p => ({ ...p, affected_people: e.target.value }))} />
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="form-row">
+                                        <div className="form-group">
+                                            <label>🎯 Radius Dampak (km)</label>
+                                            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                                <input type="number" step="0.5" min="0.5" max="50" placeholder="Contoh: 1.0" value={formData.impact_radius_km}
+                                                    onChange={e => setFormData(p => ({ ...p, impact_radius_km: e.target.value }))}
+                                                    style={{ maxWidth: '150px' }} />
+                                                <span style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>* Area perkiraan terdampak bencana</span>
+                                            </div>
                                         </div>
                                     </div>
 
@@ -670,6 +745,130 @@ export default function PetugasDashboard() {
                                     ))}
                                 </div>
                             )}
+                        </div>
+                    )}
+
+                    {/* Kelola Posko Tab */}
+                    {activeTab === 'my_shelter' && (
+                        <div className="fade-in">
+                            <h2 style={{ fontSize: '1.3rem', fontWeight: 800, marginBottom: 24 }}>🏠 Kelola Posko Saya</h2>
+
+                            {myShelterLoading ? (
+                                <div className="loading-container" style={{ padding: 48 }}><div className="loading-spinner" /><span className="loading-text">Memuat data posko...</span></div>
+                            ) : myShelterError ? (
+                                <div className="glass-card" style={{ textAlign: 'center', padding: 48 }}>
+                                    <div style={{ fontSize: '3rem', marginBottom: 16 }}>🏚️</div>
+                                    <div style={{ fontWeight: 700, fontSize: '1.1rem', marginBottom: 8 }}>Belum Ditugaskan</div>
+                                    <div style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem' }}>{myShelterError}</div>
+                                </div>
+                            ) : myShelter ? (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+                                    {/* Shelter Info Card */}
+                                    <div className="glass-card" style={{ padding: 0, overflow: 'hidden' }}>
+                                        <div style={{ padding: '24px 28px', borderBottom: '1px solid var(--color-border)' }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
+                                                <div>
+                                                    <h3 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: 8 }}>{myShelter.name}</h3>
+                                                    <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>📍 {myShelter.address || 'Alamat tidak tersedia'}</p>
+                                                </div>
+                                                <span className={`badge ${myShelter.is_open ? 'badge-success' : 'badge-danger'}`} style={{ fontSize: '0.85rem', padding: '8px 16px' }}>
+                                                    {myShelter.is_open ? '🟢 BUKA' : '🔴 TUTUP'}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 0 }}>
+                                            <div style={{ padding: '20px 28px', borderRight: '1px solid var(--color-border)' }}>
+                                                <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginBottom: 4, textTransform: 'uppercase', fontWeight: 600 }}>Tipe</div>
+                                                <div style={{ fontWeight: 700 }}>{myShelter.type?.replace('_', ' ')?.toUpperCase()}</div>
+                                            </div>
+                                            <div style={{ padding: '20px 28px', borderRight: '1px solid var(--color-border)' }}>
+                                                <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginBottom: 4, textTransform: 'uppercase', fontWeight: 600 }}>Kapasitas</div>
+                                                <div style={{ fontWeight: 700 }}>{myShelter.capacity} orang</div>
+                                            </div>
+                                            <div style={{ padding: '20px 28px' }}>
+                                                <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginBottom: 4, textTransform: 'uppercase', fontWeight: 600 }}>Kontak</div>
+                                                <div style={{ fontWeight: 700 }}>{myShelter.contact || '-'}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Occupancy Management */}
+                                    <div className="glass-card">
+                                        <h3 style={{ fontWeight: 800, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
+                                            <Users size={20} /> Update Jumlah Pengungsi
+                                        </h3>
+
+                                        {/* Visual progress bar */}
+                                        <div style={{ marginBottom: 20 }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+                                                <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>{myShelter.current_occupancy} / {myShelter.capacity} orang</span>
+                                                <span style={{ fontSize: '0.85rem', fontWeight: 700, color: myShelter.current_occupancy >= myShelter.capacity ? '#ef4444' : myShelter.current_occupancy >= myShelter.capacity * 0.8 ? '#f59e0b' : '#10b981' }}>
+                                                    {myShelter.current_occupancy >= myShelter.capacity ? '🔴 PENUH' : myShelter.current_occupancy >= myShelter.capacity * 0.8 ? '🟡 HAMPIR PENUH' : '🟢 TERSEDIA'}
+                                                </span>
+                                            </div>
+                                            <div style={{ height: 12, background: 'var(--color-bg-secondary)', borderRadius: 8, overflow: 'hidden' }}>
+                                                <div style={{
+                                                    width: `${Math.min((myShelter.current_occupancy / myShelter.capacity) * 100, 100)}%`,
+                                                    height: '100%',
+                                                    borderRadius: 8,
+                                                    background: myShelter.current_occupancy >= myShelter.capacity ? '#ef4444' : myShelter.current_occupancy >= myShelter.capacity * 0.8 ? '#f59e0b' : '#10b981',
+                                                    transition: 'width 0.5s ease'
+                                                }} />
+                                            </div>
+                                        </div>
+
+                                        <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                max={myShelter.capacity}
+                                                value={occupancyInput}
+                                                onChange={e => setOccupancyInput(e.target.value)}
+                                                style={{ flex: 1, padding: '12px 16px', borderRadius: 12, border: '1px solid var(--color-border)', outline: 'none', fontSize: '1rem', fontWeight: 700 }}
+                                                placeholder="Jumlah pengungsi"
+                                            />
+                                            <button className="btn btn-primary" onClick={handleUpdateOccupancy} disabled={shelterActionLoading} style={{ whiteSpace: 'nowrap', padding: '12px 24px' }}>
+                                                {shelterActionLoading ? '...' : '📝 Update'}
+                                            </button>
+                                        </div>
+
+                                        {myShelter.updated_at && (
+                                            <div style={{ marginTop: 12, fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>
+                                                Terakhir diperbarui: {new Date(myShelter.updated_at).toLocaleString('id-ID')}
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Status Toggle */}
+                                    <div className="glass-card">
+                                        <h3 style={{ fontWeight: 800, marginBottom: 16 }}>🔄 Status Posko</h3>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', background: myShelter.is_open ? 'rgba(16, 185, 129, 0.08)' : 'rgba(239, 68, 68, 0.08)', borderRadius: 12, border: `1px solid ${myShelter.is_open ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.2)'}` }}>
+                                            <div>
+                                                <div style={{ fontWeight: 700, fontSize: '1rem' }}>
+                                                    Posko saat ini: <span style={{ color: myShelter.is_open ? '#10b981' : '#ef4444' }}>{myShelter.is_open ? 'BUKA' : 'TUTUP'}</span>
+                                                </div>
+                                                <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', marginTop: 4 }}>
+                                                    {myShelter.is_open ? 'Warga dapat melihat posko ini sebagai tujuan evakuasi.' : 'Posko ini tidak tampil untuk warga.'}
+                                                </div>
+                                            </div>
+                                            <button
+                                                className={`btn ${myShelter.is_open ? 'btn-outline' : 'btn-primary'}`}
+                                                onClick={handleToggleStatus}
+                                                disabled={shelterActionLoading}
+                                                style={{ whiteSpace: 'nowrap', padding: '12px 24px' }}
+                                            >
+                                                {myShelter.is_open ? '🔴 Tutup Posko' : '🟢 Buka Posko'}
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {shelterActionMsg && (
+                                        <div className={`badge ${shelterActionMsg.startsWith('❌') ? 'badge-danger' : 'badge-success'}`} style={{ width: '100%', padding: 16, borderRadius: 12, fontSize: '0.9rem' }}>
+                                            {shelterActionMsg}
+                                        </div>
+                                    )}
+                                </div>
+                            ) : null}
                         </div>
                     )}
                 </div>

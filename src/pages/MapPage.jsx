@@ -5,11 +5,11 @@ import { Compass, MapPin, Search, Home, BarChart2, Ruler, Tag, Megaphone, HardHa
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
-import { getNearbyZones, getNearbyShelters } from '../services/api';
+import { getNearbyZones, getNearbyShelters, checkProximity } from '../services/api';
 import { useGeolocation } from '../hooks/useGeolocation';
 import {
     getRiskColor, getRiskLabel, getRiskBadgeClass, getDisasterLabel,
-    getDisasterIcon, getShelterTypeLabel, DEFAULT_LOCATION
+    getDisasterIcon, getShelterTypeLabel, DEFAULT_LOCATION, getRadiusFillOpacity
 } from '../utils/helpers';
 
 // Fix default icon
@@ -68,6 +68,7 @@ export default function MapPage() {
     const [searchText, setSearchText] = useState('');
     const [mapCenter, setMapCenter] = useState(null);
     const [showSidebar, setShowSidebar] = useState(true);
+    const [proximityAlert, setProximityAlert] = useState(null);
 
     const fetchData = useCallback(async (lat, lng) => {
         setLoadingData(true);
@@ -104,7 +105,21 @@ export default function MapPage() {
             console.error('Error fetching map data:', err);
         }
         setLoadingData(false);
-    }, []);
+        
+        // 4. Check Proximity if we are fetching around user's exact location
+        if (lat && lng && location && Math.abs(lat - location.lat) < 0.001) {
+            try {
+                const proximityData = await checkProximity(lat, lng);
+                if (proximityData && proximityData.in_danger_zone && proximityData.warnings.length > 0) {
+                    setProximityAlert(proximityData.warnings[0]); // Show the closest warning
+                } else {
+                    setProximityAlert(null);
+                }
+            } catch (err) {
+                console.error('Error checking proximity:', err);
+            }
+        }
+    }, [location]);
 
     useEffect(() => {
         if (location) {
@@ -204,6 +219,19 @@ export default function MapPage() {
                                             {zone.description}
                                         </span>
                                     )}
+                                    {zone.sensor_data?.road_accessible !== undefined && (
+                                        <span style={{ marginTop: 4, fontSize: '0.8rem', fontWeight: 'bold', color: zone.sensor_data.road_accessible ? 'var(--color-success)' : 'var(--color-danger)' }}>
+                                            {zone.sensor_data.road_accessible ? '🛣️ Jalan Dapat Diakses' : '🛣️ Jalan Terputus/Rusak'}
+                                        </span>
+                                    )}
+                                    {zone.sensor_data?.needs_evacuation && (
+                                        <span className="pulse" style={{ marginTop: 2, fontSize: '0.8rem', fontWeight: 'bold', color: 'var(--color-danger)' }}>
+                                            🚨 BUTUH EVAKUASI SEGERA
+                                        </span>
+                                    )}
+                                    <span style={{ marginTop: 4, fontSize: '0.8rem', fontWeight: 'bold' }}>
+                                        <Activity size={12} style={{ display: 'inline', verticalAlign: 'text-bottom', marginRight: '4px' }}/> Radius Dampak: {zone.impact_radius_km || 5.0} km
+                                    </span>
                                 </div>
                             </Popup>
                         </Marker>
@@ -214,11 +242,11 @@ export default function MapPage() {
                         <Circle
                             key={`circle-${zone.id}`}
                             center={[zone.center_lat, zone.center_lng]}
-                            radius={800}
+                            radius={(zone.impact_radius_km || 5.0) * 1000} // Radius in meters
                             pathOptions={{
                                 color: getRiskColor(zone.risk_level),
                                 fillColor: getRiskColor(zone.risk_level),
-                                fillOpacity: 0.12,
+                                fillOpacity: getRadiusFillOpacity(zone.risk_level),
                                 weight: 1.5,
                             }}
                         />
@@ -288,6 +316,26 @@ export default function MapPage() {
 
             {/* Map UI Overlays Layer */}
             <div className="map-ui-layer">
+                {/* Proximity Alert Toast */}
+                {proximityAlert && (
+                    <div className="proximity-alert-toast" style={{
+                        position: 'absolute', top: 80, left: '50%', transform: 'translateX(-50%)',
+                        background: 'var(--color-danger)', color: 'white', padding: '12px 20px',
+                        borderRadius: '8px', boxShadow: '0 4px 12px rgba(239, 68, 68, 0.4)',
+                        display: 'flex', alignItems: 'flex-start', gap: '12px', zIndex: 1000,
+                        maxWidth: '90%', width: '400px'
+                    }}>
+                        <div style={{ marginTop: '2px' }}><AlertTriangle size={24} /></div>
+                        <div style={{ flex: 1 }}>
+                            <div style={{ fontWeight: 'bold', marginBottom: '4px', fontSize: '1rem' }}>Peringatan Bahaya</div>
+                            <div style={{ fontSize: '0.9rem', lineHeight: '1.4' }}>{proximityAlert.message}</div>
+                        </div>
+                        <button onClick={() => setProximityAlert(null)} style={{ background: 'transparent', border: 'none', color: 'white', cursor: 'pointer', padding: 0 }}>
+                            <X size={18} />
+                        </button>
+                    </div>
+                )}
+
                 {/* Search bar floating pill */}
                 <div className="map-search-pill">
                     <span className="search-icon" style={{ color: 'var(--color-text-muted)', fontSize: '1.2rem', display: 'flex', alignItems: 'center' }}><Search size={20} /></span>

@@ -73,7 +73,9 @@ export function getStatusBadgeClass(status) {
 // Format date
 export function formatDate(dateStr) {
     if (!dateStr) return '-';
-    const date = new Date(dateStr);
+    // Ensure UTC interpretation if missing 'Z'
+    const safeDateStr = (!dateStr.endsWith('Z') && dateStr.includes('T')) ? `${dateStr}Z` : dateStr;
+    const date = new Date(safeDateStr);
     return date.toLocaleDateString('id-ID', {
         day: 'numeric',
         month: 'short',
@@ -85,7 +87,9 @@ export function formatDate(dateStr) {
 
 export function timeAgo(dateStr) {
     if (!dateStr) return '';
-    const date = new Date(dateStr);
+    // Ensure UTC interpretation if missing 'Z'
+    const safeDateStr = (!dateStr.endsWith('Z') && dateStr.includes('T')) ? `${dateStr}Z` : dateStr;
+    const date = new Date(safeDateStr);
     const now = new Date();
     const diff = Math.floor((now - date) / 1000);
 
@@ -153,3 +157,29 @@ export function getFacilityLabel(fac) {
 
 // Default location (Jakarta)
 export const DEFAULT_LOCATION = { lat: -6.2088, lng: 106.8456 };
+
+/**
+ * Calculate distance between two GPS points using Haversine formula
+ * @returns distance in kilometers
+ */
+export function haversineDistance(lat1, lng1, lat2, lng2) {
+    const R = 6371; // Earth's radius in km
+    const dLat = ((lat2 - lat1) * Math.PI) / 180;
+    const dLng = ((lng2 - lng1) * Math.PI) / 180;
+    const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos((lat1 * Math.PI) / 180) *
+            Math.cos((lat2 * Math.PI) / 180) *
+            Math.sin(dLng / 2) *
+            Math.sin(dLng / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+}
+
+/**
+ * Get fill opacity for radius circle based on risk level
+ */
+export function getRadiusFillOpacity(riskLevel) {
+    const map = { 1: 0.06, 2: 0.08, 3: 0.10, 4: 0.14, 5: 0.18 };
+    return map[riskLevel] || 0.10;
+}

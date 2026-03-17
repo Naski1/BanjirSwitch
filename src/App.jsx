@@ -9,6 +9,7 @@ import WeatherPage from './pages/WeatherPage';
 import LoginPage from './pages/LoginPage';
 import DashboardRouter from './components/DashboardRouter';
 import ChatbotWidget from './components/ChatbotWidget';
+import { TooltipProvider } from '@/components/ui/tooltip';
 import './index.css';
 
 function AppRoutes() {
@@ -42,9 +43,11 @@ function AppRoutes() {
 function App() {
     return (
         <AuthProvider>
-            <Router>
-                <AppRoutes />
-            </Router>
+            <TooltipProvider>
+                <Router>
+                    <AppRoutes />
+                </Router>
+            </TooltipProvider>
         </AuthProvider>
     );
 }

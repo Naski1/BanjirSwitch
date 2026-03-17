@@ -50,6 +50,7 @@ async function fetchAPI(endpoint, params = {}) {
     if (!response.ok) {
         throw new Error(`API Error: ${response.status} ${response.statusText}`);
     }
+    if (response.status === 204) return null;
     return response.json();
 }
 
@@ -77,6 +78,7 @@ async function fetchAuthAPI(endpoint, options = {}) {
         if (Array.isArray(msg)) msg = msg.map(e => (e.loc ? e.loc.join('.') + ': ' : '') + (e.msg || e.message || JSON.stringify(e))).join(', ');
         throw new Error(msg || `Error ${response.status}`);
     }
+    if (response.status === 204) return null;
     return response.json();
 }
 
@@ -157,6 +159,15 @@ export async function createAlert(alertData) {
 }
 
 // ============ EVACUATION / SHELTERS ============
+export async function getShelters(options = {}) {
+    return fetchAPI('/evacuation/shelters', {
+        type: options.type,
+        open_only: options.open_only !== undefined ? options.open_only : true,
+        limit: options.limit || 100,
+        skip: options.skip || 0
+    });
+}
+
 export async function getNearbyShelters(lat, lng, radius = 15, type = null) {
     return fetchAPI('/evacuation/shelters/nearby', {
         lat, lng, radius, type, open_only: true,
@@ -171,6 +182,51 @@ export async function createShelter(shelterData) {
     return fetchAuthAPI('/evacuation/shelters', {
         method: 'POST',
         body: JSON.stringify(shelterData),
+    });
+}
+
+export async function updateShelter(shelterId, data) {
+    return fetchAuthAPI(`/evacuation/shelters/${shelterId}`, {
+        method: 'PUT',
+        body: JSON.stringify(data),
+    });
+}
+
+export async function deleteShelter(shelterId) {
+    return fetchAuthAPI(`/evacuation/shelters/${shelterId}`, {
+        method: 'DELETE',
+    });
+}
+
+// ============ ADMIN - SHELTER ASSIGNMENT ============
+export async function assignPetugasToShelter(shelterId, userId) {
+    return fetchAuthAPI(`/admin/shelters/${shelterId}/assign/${userId}`, {
+        method: 'PUT',
+    });
+}
+
+export async function unassignPetugasFromShelter(shelterId, userId) {
+    return fetchAuthAPI(`/admin/shelters/${shelterId}/unassign/${userId}`, {
+        method: 'DELETE',
+    });
+}
+
+// ============ PETUGAS - MY SHELTER ============
+export async function getMyShelter() {
+    return fetchAuthAPI('/petugas/my-shelter', { method: 'GET' });
+}
+
+export async function updateShelterOccupancy(occupancy) {
+    return fetchAuthAPI('/petugas/my-shelter/occupancy', {
+        method: 'PATCH',
+        body: JSON.stringify({ current_occupancy: occupancy }),
+    });
+}
+
+export async function updateShelterStatus(isOpen) {
+    return fetchAuthAPI('/petugas/my-shelter/status', {
+        method: 'PATCH',
+        body: JSON.stringify({ is_open: isOpen }),
     });
 }
 
@@ -226,6 +282,10 @@ export async function createFieldReport(data) {
         method: 'POST',
         body: JSON.stringify(data),
     });
+}
+
+export async function deleteFieldReport(reportId) {
+    return fetchAuthAPI(`/petugas/field-reports/${reportId}`, { method: 'DELETE' });
 }
 
 export async function getFieldReports(filters = {}) {
@@ -316,6 +376,11 @@ export async function getVillages(distId) {
 
 export async function getPetugasCoverage() {
     return fetchAuthAPI('/admin/petugas/coverage', { method: 'GET' });
+}
+
+// ============ PROXIMITY CHECK ============
+export async function checkProximity(lat, lng) {
+    return fetchAPI('/zones/check-proximity', { lat, lng });
 }
 
 // ============ HEALTH CHECK ============
